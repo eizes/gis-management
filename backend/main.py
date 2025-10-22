@@ -31,7 +31,8 @@ sessions: Dict[str, Dict[str, Any]] = {}
 class ServiceUpdate(BaseModel):
     website: Optional[Dict] = None
     database: Optional[Dict] = None
-    credentials: Optional[Dict] = None
+    credentials: Optional[Dict] = None  # Für Geoserver, uMap (user/password)
+    auth: Optional[Dict] = None  # Für Traccar (token)
 
 # NEUE Pydantic Models für Workspace-Validierung
 class WorkspaceValidationRequest(BaseModel):
@@ -261,15 +262,21 @@ def update_service_sync(service: str, data: ServiceUpdate, username: str):
         if 'password' in data.database:
             setting.db_password = data.database['password']
         
-        # NEUE ZEILE: Geoserver Workspace
+        # Geoserver Workspace
         if service == 'geoserver' and 'workspace' in data.database:
             setting.geoserver_workspace = data.database['workspace']
     
-    # Service credentials
-    if data.credentials:
-        setting.service_user = data.credentials.get('user')
-        if 'password' in data.credentials:
-            setting.service_password = data.credentials['password']
+    # WICHTIG: Unterscheide zwischen Traccar (Token) und anderen Services (User/Password)
+    if service == 'traccar':
+        # Traccar verwendet Token-Authentifizierung
+        if data.auth and 'token' in data.auth:
+            setting.traccar_token = data.auth['token']
+    else:
+        # Andere Services (Geoserver, uMap) verwenden User/Password
+        if data.credentials:
+            setting.service_user = data.credentials.get('user')
+            if 'password' in data.credentials:
+                setting.service_password = data.credentials['password']
     
     setting.updated_by = username
     

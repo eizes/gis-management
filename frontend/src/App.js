@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, ChevronRight, Server, User, LogOut, Eye, EyeOff, AlertCircle, Map as MapIcon, ExternalLink, Calendar, Globe, Lock, Link2, CheckCircle } from 'lucide-react';
+import { Settings, ChevronRight, Server, User, LogOut, Eye, EyeOff, AlertCircle, Map as MapIcon, ExternalLink, Calendar, Globe, Lock, Link2, CheckCircle, Key } from 'lucide-react';
 
 const API_BASE_URL = 'https://gis.eizes.com/api';
 
@@ -123,6 +123,34 @@ const PasswordField = ({ label, value, disabled, onChange }) => {
           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
         </button>
       </div>
+    </div>
+  );
+};
+
+// NEUE KOMPONENTE: Token-Feld für Traccar
+const TokenField = ({ label, value, disabled, onChange }) => {
+  const [showToken, setShowToken] = useState(false);
+  
+  return (
+    <div className="mb-6">
+      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+        <Key size={16} />
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          type={showToken ? 'text' : 'password'}
+          value={value || ''}
+          disabled={disabled}
+          onChange={onChange}
+          placeholder={disabled ? '' : 'API-Token eingeben...'}
+          className={`w-full px-4 py-3 pr-12 border-2 rounded-lg text-base font-mono transition-all focus:outline-none focus:ring-2 ${disabled ? 'border-gray-200 bg-gray-50 text-gray-600' : 'border-blue-200 bg-white hover:border-blue-300 focus:border-blue-400 focus:ring-blue-100'}`}
+        />
+        <button type="button" onClick={() => setShowToken(!showToken)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1">
+          {showToken ? <EyeOff size={20} /> : <Eye size={20} />}
+        </button>
+      </div>
+      <p className="mt-2 text-xs text-gray-500">Das API-Token für die Traccar-Authentifizierung</p>
     </div>
   );
 };
@@ -298,34 +326,27 @@ const SettingsContent = ({ service, data, onSave }) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
-  
-  // NEUE States für Workspace-Validierung
-  const [workspaceValidation, setWorkspaceValidation] = useState(null);
   const [validatingWorkspace, setValidatingWorkspace] = useState(false);
+  const [workspaceValidation, setWorkspaceValidation] = useState(null);
 
-  useEffect(() => { 
-    setFormData(data); 
-    setFieldErrors({});
-    setWorkspaceValidation(null);
+  useEffect(() => {
+    setFormData(data);
   }, [data]);
 
   const handleFieldChange = (path, value) => {
     setFormData(prev => {
-      const newData = { ...prev };
+      const newData = JSON.parse(JSON.stringify(prev));
       let current = newData;
       for (let i = 0; i < path.length - 1; i++) {
-        current[path[i]] = { ...current[path[i]] };
+        if (!current[path[i]]) current[path[i]] = {};
         current = current[path[i]];
       }
       current[path[path.length - 1]] = value;
       return newData;
     });
     
-    // Workspace-Validierung zurücksetzen bei Änderungen
-    if (path[path.length - 1] === 'workspace' || path.includes('database')) {
-      setWorkspaceValidation(null);
-      // Lösche Fehler für dieses Feld
-      const fieldKey = path.join('.');
+    const fieldKey = path.join('.');
+    if (fieldErrors[fieldKey]) {
       setFieldErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[fieldKey];
@@ -334,10 +355,7 @@ const SettingsContent = ({ service, data, onSave }) => {
     }
   };
 
-  // NEUE Funktion: Workspace validieren
   const handleValidateWorkspace = async () => {
-    if (service !== 'geoserver') return;
-    
     const dbData = formData.database || {};
     if (!dbData.workspace || !dbData.database || !dbData.user) {
       alert('Bitte füllen Sie zuerst alle Datenbankfelder aus');
@@ -416,7 +434,7 @@ const SettingsContent = ({ service, data, onSave }) => {
         <div key={key} className="mb-8 pb-6 border-b-2 border-gray-100 last:border-0">
           <h4 className="font-bold text-gray-800 mb-4 capitalize text-lg flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            {key}
+            {key === 'auth' ? 'Authentifizierung' : key}
           </h4>
           <div className="ml-5 space-y-4">
             {Object.entries(value).map(([k, v]) => renderField(k, v, currentPath))}
@@ -425,10 +443,25 @@ const SettingsContent = ({ service, data, onSave }) => {
       );
     }
     
+    // WICHTIG: Token-Feld für Traccar
+    const isToken = service === 'traccar' && key === 'token' && path.includes('auth');
     const isPassword = key.toLowerCase().includes('password');
     
     // SPEZIALBEHANDLUNG: Workspace-Feld für Geoserver
     const isWorkspaceField = service === 'geoserver' && key === 'workspace' && path.includes('database');
+    
+    // Spezielle Behandlung für Token-Felder
+    if (isToken) {
+      return (
+        <TokenField 
+          key={key} 
+          label="API Token" 
+          value={value} 
+          disabled={!editMode} 
+          onChange={(e) => handleFieldChange(currentPath, e.target.value)} 
+        />
+      );
+    }
     
     if (isPassword) {
       return (

@@ -40,6 +40,15 @@ class Settings(models.Model):
         help_text="Schema-Name in der Geoserver PostGIS-Datenbank (z.B. 'public' oder 'cite')"
     )
 
+    # Traccar spezifisch - NEUES FELD (ersetzt service_user/service_password für Traccar)
+    traccar_token = EncryptedCharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name="Traccar API Token",
+        help_text="API-Token für die Authentifizierung bei Traccar (ersetzt User/Password)"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.CharField(max_length=100, blank=True, null=True)
@@ -156,6 +165,8 @@ class Settings(models.Model):
 
     def to_dict(self):
         result = {"website": {"url": self.website_url}}
+        
+        # Datenbank-Konfiguration
         if self.db_host:
             result["database"] = {
                 "host": self.db_host,
@@ -167,16 +178,28 @@ class Settings(models.Model):
             # Geoserver: Workspace IMMER hinzufügen (auch wenn leer)
             if self.service_name == 'geoserver':
                 result["database"]["workspace"] = self.geoserver_workspace or ""
-                
-        if self.service_user:
-            result["credentials"] = {
-                "user": self.service_user,
-                "password": self.service_password
+        
+        # Service-Authentifizierung
+        # WICHTIG: Traccar verwendet Token-Authentifizierung
+        if self.service_name == 'traccar':
+            # Traccar: IMMER auth-Objekt zurückgeben (auch wenn Token leer ist)
+            result["auth"] = {
+                "token": self.traccar_token or ""
             }
+        else:
+            # Andere Services (Geoserver, uMap) verwenden User/Password
+            if self.service_user:
+                result["credentials"] = {
+                    "user": self.service_user,
+                    "password": self.service_password
+                }
+        
+        # KeyCloak-spezifische Konfiguration
         if self.keycloak_realm:
             result["keycloak"] = {
                 "realm": self.keycloak_realm,
                 "client_id": self.keycloak_client_id,
                 "client_secret": self.keycloak_client_secret
             }
+        
         return result
