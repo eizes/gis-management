@@ -1,0 +1,49 @@
+# Diese viminfo-Datei wurde von Vim 9.1 generiert.
+# Sie können sie verändern, wenn Sie vorsichtig vorgehen!
+
+# Viminfo version
+|1,4
+
+# Wert von 'encoding', als diese Datei geschrieben wurde
+*encoding=utf-8
+
+
+# hlsearch on (H) or off (h):
+~h
+# Befehlszeile Geschichte (neueste bis älteste):
+:q!
+|2,0,1761079083,,"q!"
+:wq
+|2,0,1761079079,,"wq"
+:%d
+|2,0,1761079046,,"%d"
+
+# Suchausdruck Geschichte (neueste bis älteste):
+
+# Ausdruck Geschichte (neueste bis älteste):
+
+# Eingabe-Zeile Geschichte (neueste bis älteste):
+
+# Debug-Zeile Geschichte (neueste bis älteste):
+
+# Register:
+
+# Datei-Markierungen:
+'0  690  0  ~/frontend/src/App.js
+|4,48,690,0,1761079083,"~/frontend/src/App.js"
+
+# Jumplist (neueste zuerst):
+-'  690  0  ~/frontend/src/App.js
+|4,39,690,0,1761079083,"~/frontend/src/App.js"
+-'  1  0  ~/frontend/src/App.js
+|4,39,1,0,1761079046,"~/frontend/src/App.js"
+
+# Geschichte der Markierungen innerhalb von Dateien (neueste zuerst):
+
+> ~/frontend/src/App.js
+	*	1761079081	0
+	"	690	0
+	^	690	1
+	.	690	0
+	+	1	51
+	+	690	0

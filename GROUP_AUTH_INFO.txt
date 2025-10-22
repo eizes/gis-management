@@ -1,0 +1,26 @@
+╔═══════════════════════════════════════════════════════╗
+║    Gruppenbasierte Authentifizierung aktiviert      ║
+╚═══════════════════════════════════════════════════════╝
+
+Update: Di 21. Okt 17:40:27 CEST 2025
+Erforderliche Gruppe: gis_users
+
+KEYCLOAK KONFIGURATION:
+1. Gruppe erstellen: "gis_users"
+2. Client Mapper hinzufügen:
+   - Name: groups
+   - Token Claim Name: groups
+   - Full group path: OFF
+   - Add to ID/Access/UserInfo Token: ON
+
+BENUTZER HINZUFÜGEN:
+KeyCloak Admin → Users → [Benutzer] → Groups → "gis_users" → Join
+
+FEHLERSUCHE:
+- Logs: journalctl -u gis-fastapi -f
+- Backup: /opt/gis-management/backend/main.py.backup.*
+
+TESTEN:
+1. Als Benutzer OHNE Gruppe einloggen → Fehlermeldung
+2. Benutzer zu gis_users hinzufügen
+3. Erneut einloggen → Zugriff gewährt
