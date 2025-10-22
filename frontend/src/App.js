@@ -179,12 +179,13 @@ const UMapMapsView = () => {
   };
 
   const handleSaveToGeoserver = async (mapId, mapName) => {
-    if (!window.confirm(`Karte "${mapName}" im Geoserver speichern?`)) return;
+    // TODO: Diese Funktion wird später die uMap-Karte über Geoserver nach Traccar als Server Overlay pushen
+    if (!window.confirm(`Karte "${mapName}" über Geoserver nach Traccar pushen?`)) return;
     try {
       await apiService.saveToGeoserver(mapId);
-      alert('Funktion wird noch implementiert');
+      alert('Funktion wird noch implementiert: Karte wird über Geoserver nach Traccar als Server Overlay übertragen');
     } catch (err) {
-      alert('Fehler beim Speichern');
+      alert('Fehler beim Pushen nach Traccar');
     }
   };
 
@@ -307,9 +308,9 @@ const UMapMapsView = () => {
                 <button
                   onClick={() => handleSaveToGeoserver(map.id, map.name)}
                   className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                  title="Im Geoserver speichern"
+                  title="Über Geoserver nach Traccar pushen"
                 >
-                  Geoserver
+                  → Traccar
                 </button>
               </div>
             </div>
